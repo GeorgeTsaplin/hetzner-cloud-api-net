@@ -131,7 +131,7 @@ namespace lkcode.hetznercloudapi.Api
         /// </summary>
         /// <param name="page">optional parameter to get a specific page. default is page 1.</param>
         /// <returns>a list with the image-objects.</returns>
-        public static async Task<List<Image>> GetAsync(int page = 1)
+        public static async Task<List<Image>> GetAsync(int page = 1, string token = null)
         {
             if ((_maxPages > 0 && (page <= 0 || page > _maxPages)))
             {
@@ -146,7 +146,7 @@ namespace lkcode.hetznercloudapi.Api
                 url += "?page=" + page.ToString();
             }
 
-            string responseContent = await ApiCore.SendRequest(url);
+            string responseContent = await ApiCore.SendRequest(url, token);
             Objects.Image.Get.Response response = JsonConvert.DeserializeObject<Objects.Image.Get.Response>(responseContent);
 
             // load meta

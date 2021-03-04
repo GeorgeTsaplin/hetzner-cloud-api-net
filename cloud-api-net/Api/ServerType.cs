@@ -221,7 +221,7 @@ namespace lkcode.hetznercloudapi.Api
         /// Returns all datacenter in a list.
         /// </summary>
         /// <returns></returns>
-        public static async Task<List<ServerType>> GetAsync(int page = 1)
+        public static async Task<List<ServerType>> GetAsync(int page = 1, string token = null)
         {
             if ((_maxPages > 0 && (page <= 0 || page > _maxPages)))
             {
@@ -236,7 +236,7 @@ namespace lkcode.hetznercloudapi.Api
                 url += "?page=" + page.ToString();
             }
 
-            string responseContent = await ApiCore.SendRequest(url);
+            string responseContent = await ApiCore.SendRequest(url, token);
             Objects.ServerType.Get.Response response = JsonConvert.DeserializeObject<Objects.ServerType.Get.Response>(responseContent);
 
             // load meta
