@@ -61,15 +61,18 @@ namespace lkcode.hetznercloudapi.Core
         /// </summary>
         /// <param name="action"></param>
         /// <returns></returns>
-        public static async Task<string> SendRequest(string action)
+        public static async Task<string> SendRequest(string action, string token = null)
         {
-            checkApiToken();
+            if (token == null)
+            {
+                checkApiToken();
+            }
 
             HttpClient client = new HttpClient();
             client.DefaultRequestHeaders.Accept.Clear();
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             client.DefaultRequestHeaders.Add("User-Agent", ApiCore.ClientUserAgent);
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", ApiCore.ApiToken);
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token ?? ApiCore.ApiToken);
 
             string response = await client.GetStringAsync(ApiCore.ApiServer + action);
 
@@ -84,9 +87,12 @@ namespace lkcode.hetznercloudapi.Core
         /// <param name="action"></param>
         /// <param name="arguments"></param>
         /// <returns></returns>
-        public static async Task<string> SendPostRequest(string action, Dictionary<string, object> arguments = null)
+        public static async Task<string> SendPostRequest(string action, Dictionary<string, object> arguments = null, string token = null)
         {
-            checkApiToken();
+            if (token == null)
+            {
+                checkApiToken();
+            }
 
             StringContent argumentsContent = null;
 
@@ -101,7 +107,7 @@ namespace lkcode.hetznercloudapi.Core
 
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             client.DefaultRequestHeaders.Add("User-Agent", ApiCore.ClientUserAgent);
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", ApiCore.ApiToken);
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token ?? ApiCore.ApiToken);
 
             HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, ApiCore.ApiServer + action);
             request.Content = argumentsContent;
@@ -119,9 +125,12 @@ namespace lkcode.hetznercloudapi.Core
         /// </summary>
         /// <param name="action"></param>
         /// <returns></returns>
-        public static async Task<string> SendDeleteRequest(string action, Dictionary<string, string> arguments = null)
+        public static async Task<string> SendDeleteRequest(string action, Dictionary<string, string> arguments = null, string token = null)
         {
-            checkApiToken();
+            if (token == null)
+            {
+                checkApiToken();
+            }
 
             StringContent argumentsContent = null;
 
@@ -136,7 +145,7 @@ namespace lkcode.hetznercloudapi.Core
 
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             client.DefaultRequestHeaders.Add("User-Agent", ApiCore.ClientUserAgent);
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", ApiCore.ApiToken);
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token ?? ApiCore.ApiToken);
 
             HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Delete, ApiCore.ApiServer + action);
             request.Content = argumentsContent;

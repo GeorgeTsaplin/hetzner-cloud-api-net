@@ -161,7 +161,7 @@ namespace lkcode.hetznercloudapi.Api
         /// <param name="filter">Can be used to filter servers by their name. The response will only contain the server matching the specified name.</param>
         /// <param name="page"></param>
         /// <returns>Returns a list with the server-objects.</returns>
-        public static async Task<List<Server>> GetAsync(string filter, int page = 1)
+        public static async Task<List<Server>> GetAsync(string filter, int page = 1, string token = null)
         {
             if ((_maxPages > 0 && (page <= 0 || page > _maxPages)))
             {
@@ -181,7 +181,7 @@ namespace lkcode.hetznercloudapi.Api
                 url += "&page=" + page.ToString();
             }
 
-            string responseContent = await ApiCore.SendRequest(url);
+            string responseContent = await ApiCore.SendRequest(url, token);
             Objects.Server.Get.Response response = JsonConvert.DeserializeObject<Objects.Server.Get.Response>(responseContent);
 
             // load meta
@@ -241,7 +241,7 @@ namespace lkcode.hetznercloudapi.Api
         /// saves the server-model
         /// </summary>
         /// <returns></returns>
-        public async Task<ServerActionResponse> SaveAsync(Image image, bool startAfterCreate = true, string[] sshKeys = null, string userData = "", long locationId = -1, long datacenterId = -1)
+        public async Task<ServerActionResponse> SaveAsync(Image image, bool startAfterCreate = true, string[] sshKeys = null, string userData = "", long locationId = -1, long datacenterId = -1, string token = null)
         {
             this.validateRequiredServerDataForSave(image);
             this.validateOptionalServerDataForSave();
@@ -275,7 +275,7 @@ namespace lkcode.hetznercloudapi.Api
                 arguments.Add("datacenter", datacenterId.ToString());
             }
 
-            string responseContent = await ApiCore.SendPostRequest(string.Format("/servers"), arguments);
+            string responseContent = await ApiCore.SendPostRequest(string.Format("/servers"), arguments, token);
             JObject responseObject = JObject.Parse(responseContent);
 
             if (responseObject["error"] != null)
@@ -485,9 +485,9 @@ namespace lkcode.hetznercloudapi.Api
         /// Deletes a server. This immediately removes the server from your account, and it is no longer accessible.
         /// </summary>
         /// <returns>the serialized ServerActionResponse</returns>
-        public async Task<ServerActionResponse> Delete()
+        public async Task<ServerActionResponse> Delete(string token = null)
         {
-            string responseContent = await ApiCore.SendDeleteRequest(string.Format("/servers/{0}", this.Id));
+            string responseContent = await ApiCore.SendDeleteRequest(string.Format("/servers/{0}", this.Id), token: token);
             Objects.Server.Delete.Response response = JsonConvert.DeserializeObject<Objects.Server.Delete.Response>(responseContent);
 
             ServerActionResponse actionResponse = GetServerActionFromResponseData(response.action);
