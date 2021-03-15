@@ -85,6 +85,11 @@ namespace lkcode.hetznercloudapi.Api
         public Network Network { get; set; }
 
         /// <summary>
+        /// Private network information.
+        /// </summary>
+        public PrivateNetwork PrivateNetwork { get; set; }
+
+        /// <summary>
         /// The ServerType of this Server.
         /// </summary>
         public ServerType ServerType { get; set; }
@@ -1036,6 +1041,11 @@ namespace lkcode.hetznercloudapi.Api
                     Blocked = responseData.public_net.ipv6.blocked
                 },
                 FloatingIpIds = responseData.public_net.floating_ips
+            };
+            server.PrivateNetwork = new PrivateNetwork
+            {
+                Id = responseData.private_net.network,
+                IP = responseData.private_net.ip
             };
 
             return server;
