@@ -87,7 +87,7 @@ namespace lkcode.hetznercloudapi.Api
         /// <summary>
         /// Private network information.
         /// </summary>
-        public PrivateNetwork PrivateNetwork { get; set; }
+        public ServerPrivateNetwork PrivateNetwork { get; set; }
 
         /// <summary>
         /// The ServerType of this Server.
@@ -246,7 +246,15 @@ namespace lkcode.hetznercloudapi.Api
         /// saves the server-model
         /// </summary>
         /// <returns></returns>
-        public async Task<ServerActionResponse> SaveAsync(Image image, bool startAfterCreate = true, string[] sshKeys = null, string userData = "", long locationId = -1, long datacenterId = -1, string token = null)
+        public async Task<ServerActionResponse> SaveAsync(
+            Image image,
+            bool startAfterCreate = true,
+            string[] sshKeys = null,
+            string userData = "",
+            long locationId = -1,
+            long datacenterId = -1,
+            long[] networks = null,
+            string token = null)
         {
             this.validateRequiredServerDataForSave(image);
             this.validateOptionalServerDataForSave();
@@ -278,6 +286,11 @@ namespace lkcode.hetznercloudapi.Api
             if (datacenterId > 0)
             {
                 arguments.Add("datacenter", datacenterId.ToString());
+            }
+            // optional field: networks
+            if (networks?.Length > 0)
+            {
+                arguments.Add("networks", networks);
             }
 
             string responseContent = await ApiCore.SendPostRequest(string.Format("/servers"), arguments, token);
@@ -1042,7 +1055,7 @@ namespace lkcode.hetznercloudapi.Api
                 },
                 FloatingIpIds = responseData.public_net.floating_ips
             };
-            server.PrivateNetwork = new PrivateNetwork
+            server.PrivateNetwork = new ServerPrivateNetwork
             {
                 Id = responseData.private_net.network,
                 IP = responseData.private_net.ip
