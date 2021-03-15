@@ -24,6 +24,12 @@ namespace lkcode.hetznercloudapi.Objects.Server.Universal
         public List<int> floating_ips { get; set; }
     }
 
+    public class PrivateNet
+    {
+        public int network { get; set; }
+        public string ip { get; set; }
+    }
+
     public class PriceHourly
     {
         public string net { get; set; }
@@ -119,6 +125,7 @@ namespace lkcode.hetznercloudapi.Objects.Server.Universal
         public string status { get; set; }
         public DateTime created { get; set; }
         public PublicNet public_net { get; set; }
+        public PrivateNet private_net { get; set; }
         public ServerType server_type { get; set; }
         public Datacenter datacenter { get; set; }
         public Image image { get; set; }
