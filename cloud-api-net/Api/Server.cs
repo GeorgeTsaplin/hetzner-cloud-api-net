@@ -384,9 +384,9 @@ namespace lkcode.hetznercloudapi.Api
         /// Cuts power to a server and starts it again. This forcefully stops it without giving the server operating system time to gracefully stop. This may lead to data loss, it’s equivalent to pulling the power cord and plugging it in again. Reset should only be used when reboot does not work.
         /// </summary>
         /// <returns>the serialized ServerActionResponse</returns>
-        public async Task<ServerActionResponse> Reset()
+        public async Task<ServerActionResponse> Reset(string token = null)
         {
-            string responseContent = await ApiCore.SendPostRequest(string.Format("/servers/{0}/actions/reset", this.Id));
+            string responseContent = await ApiCore.SendPostRequest(string.Format("/servers/{0}/actions/reset", this.Id), token: token);
             Objects.Server.PostReset.Response response = JsonConvert.DeserializeObject<Objects.Server.PostReset.Response>(responseContent);
 
             ServerActionResponse actionResponse = GetServerActionFromResponseData(response.action);
@@ -556,6 +556,44 @@ namespace lkcode.hetznercloudapi.Api
 
             return actionResponse;
         }
+
+        /// <summary>
+        /// Attaches server to a private network
+        /// </summary>
+        /// <param name="network">private network</param>
+        /// <param name="ip">IP address</param>
+        /// <param name="token"></param>
+        /// <returns></returns>
+        public async Task<ServerActionResponse> AttachNetwork(long network, string ip, string token = null)
+        {
+            Dictionary<string, object> arguments = new Dictionary<string, object>();
+            ip = ip.Trim();
+
+            arguments.Add("network", network);
+            arguments.Add("ip", ip);
+            
+            string responseContent = await ApiCore.SendPostRequest(string.Format("/servers/{0}/actions/attach_to_network", this.Id), arguments, token: token);
+            JObject responseObject = JObject.Parse(responseContent);
+            if (responseObject["error"] != null)
+            {
+                // error
+                Objects.Server.Universal.ErrorResponse error = JsonConvert.DeserializeObject<Objects.Server.Universal.ErrorResponse>(responseContent);
+                var response = new ServerActionResponse();
+                response.Error = GetErrorFromResponseData(error);
+
+                return response;
+            }
+            else
+            {
+                // success
+                var response = JsonConvert.DeserializeObject<Objects.Server.PostAttachToNetwork.Response>(responseContent);
+
+                var actionResponse = GetServerActionFromResponseData(response.action);
+
+                return actionResponse;
+            }
+        }
+
 
         /// <summary>
         /// Metrics are available for the last 30 days only.
