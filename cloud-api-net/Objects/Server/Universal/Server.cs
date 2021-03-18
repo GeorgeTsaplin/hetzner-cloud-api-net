@@ -125,7 +125,7 @@ namespace lkcode.hetznercloudapi.Objects.Server.Universal
         public string status { get; set; }
         public DateTime created { get; set; }
         public PublicNet public_net { get; set; }
-        public PrivateNet private_net { get; set; }
+        public List<PrivateNet> private_net { get; set; }
         public ServerType server_type { get; set; }
         public Datacenter datacenter { get; set; }
         public Image image { get; set; }

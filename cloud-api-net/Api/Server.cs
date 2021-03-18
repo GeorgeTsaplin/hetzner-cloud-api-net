@@ -87,7 +87,7 @@ namespace lkcode.hetznercloudapi.Api
         /// <summary>
         /// Private network information.
         /// </summary>
-        public ServerPrivateNetwork PrivateNetwork { get; set; }
+        public List<ServerPrivateNetwork> PrivateNetworks { get; set; }
 
         /// <summary>
         /// The ServerType of this Server.
@@ -1093,11 +1093,19 @@ namespace lkcode.hetznercloudapi.Api
                 },
                 FloatingIpIds = responseData.public_net.floating_ips
             };
-            server.PrivateNetwork = new ServerPrivateNetwork
+
+            server.PrivateNetworks = new List<ServerPrivateNetwork>();
+
+            foreach (var privateNetwork in responseData.private_net)
             {
-                Id = responseData.private_net.network,
-                IP = responseData.private_net.ip
-            };
+                var pnet = new ServerPrivateNetwork
+                {
+                    Id = privateNetwork.network,
+                    IP = privateNetwork.ip
+                };
+
+                server.PrivateNetworks.Add(pnet);
+            }
 
             return server;
         }
