@@ -294,27 +294,50 @@ namespace lkcode.hetznercloudapi.Api
             }
 
             string responseContent = await ApiCore.SendPostRequest(string.Format("/servers"), arguments, token);
+
+            var result = GetServerActionFromResponseDataEx<Objects.Server.Create.Response>(
+                responseContent,
+                onSuccess: (res, resp) =>
+                {
+                    Server server = GetServerFromResponseData(resp.server);
+                    this.setCreatedServer(server);
+
+                    res.AdditionalActionContent = resp.root_password;
+
+                });
+
+            return result;
+        }
+
+        private static ServerActionResponse GetServerActionFromResponseDataEx<TSuccessResponse>(
+            string responseContent,
+            Action<ServerActionResponse, TSuccessResponse> onSuccess = null,
+            Action<ServerActionResponse, Objects.Server.Universal.ErrorResponse> onError = null)
+            where TSuccessResponse: Objects.Server.Universal.ISuccessResponse
+        {
             JObject responseObject = JObject.Parse(responseContent);
 
             if (responseObject["error"] != null)
             {
                 // error
                 Objects.Server.Universal.ErrorResponse error = JsonConvert.DeserializeObject<Objects.Server.Universal.ErrorResponse>(responseContent);
-                ServerActionResponse response = new ServerActionResponse();
-                response.Error = GetErrorFromResponseData(error);
+                ServerActionResponse response = new ServerActionResponse
+                {
+                    Error = GetErrorFromResponseData(error)
+                };
+
+                onError?.Invoke(response, error);
 
                 return response;
             }
             else
             {
                 // success
-                Objects.Server.Create.Response response = JsonConvert.DeserializeObject<Objects.Server.Create.Response>(responseContent);
-
-                Server server = GetServerFromResponseData(response.server);
-                this.setCreatedServer(server);
+                TSuccessResponse response = JsonConvert.DeserializeObject<TSuccessResponse>(responseContent);
 
                 ServerActionResponse actionResponse = GetServerActionFromResponseData(response.action);
-                actionResponse.AdditionalActionContent = response.root_password;
+
+                onSuccess?.Invoke(actionResponse, response);
 
                 return actionResponse;
             }
@@ -345,9 +368,8 @@ namespace lkcode.hetznercloudapi.Api
         public async Task<ServerActionResponse> PowerOn(string token = null)
         {
             string responseContent = await ApiCore.SendPostRequest(string.Format("/servers/{0}/actions/poweron", this.Id), token: token);
-            Objects.Server.PostPoweron.Response response = JsonConvert.DeserializeObject<Objects.Server.PostPoweron.Response>(responseContent);
 
-            ServerActionResponse actionResponse = GetServerActionFromResponseData(response.action);
+            ServerActionResponse actionResponse = GetServerActionFromResponseDataEx<Objects.Server.PostPoweron.Response>(responseContent);
 
             return actionResponse;
         }
@@ -387,9 +409,8 @@ namespace lkcode.hetznercloudapi.Api
         public async Task<ServerActionResponse> Reset(string token = null)
         {
             string responseContent = await ApiCore.SendPostRequest(string.Format("/servers/{0}/actions/reset", this.Id), token: token);
-            Objects.Server.PostReset.Response response = JsonConvert.DeserializeObject<Objects.Server.PostReset.Response>(responseContent);
 
-            ServerActionResponse actionResponse = GetServerActionFromResponseData(response.action);
+            ServerActionResponse actionResponse = GetServerActionFromResponseDataEx<Objects.Server.PostReset.Response>(responseContent);
 
             return actionResponse;
         }
@@ -436,26 +457,15 @@ namespace lkcode.hetznercloudapi.Api
             }
             
             string responseContent = await ApiCore.SendPostRequest(string.Format("/servers/{0}/actions/create_image", this.Id), arguments);
-            JObject responseObject = JObject.Parse(responseContent);
+            
+            var result = GetServerActionFromResponseDataEx<Objects.Server.PostCreateImage.Response>(
+                responseContent,
+                onSuccess: (res, resp) =>
+                {
+                    res.AdditionalActionContent = GetServerImageFromResponseData(resp.image);
+                });
 
-            if(responseObject["error"] != null)
-            {
-                // error
-                Objects.Server.Universal.ErrorResponse error = JsonConvert.DeserializeObject<Objects.Server.Universal.ErrorResponse>(responseContent);
-                ServerActionResponse response = new ServerActionResponse();
-                response.Error = GetErrorFromResponseData(error);
-
-                return response;
-            } else
-            {
-                // success
-                Objects.Server.PostCreateImage.Response response = JsonConvert.DeserializeObject<Objects.Server.PostCreateImage.Response>(responseContent);
-
-                ServerActionResponse actionResponse = GetServerActionFromResponseData(response.action);
-                actionResponse.AdditionalActionContent = GetServerImageFromResponseData(response.image);
-
-                return actionResponse;
-            }
+            return result;
         }
 
         /// <summary>
@@ -476,27 +486,15 @@ namespace lkcode.hetznercloudapi.Api
             }
 
             string responseContent = await ApiCore.SendPostRequest(string.Format("/servers/{0}/actions/rebuild", this.Id), arguments);
-            JObject responseObject = JObject.Parse(responseContent);
 
-            if (responseObject["error"] != null)
-            {
-                // error
-                Objects.Server.Universal.ErrorResponse error = JsonConvert.DeserializeObject<Objects.Server.Universal.ErrorResponse>(responseContent);
-                ServerActionResponse response = new ServerActionResponse();
-                response.Error = GetErrorFromResponseData(error);
+            var result = GetServerActionFromResponseDataEx<Objects.Server.PostRebuild.Response>(
+                responseContent,
+                onSuccess: (res, resp) =>
+                {
+                    //actionResponse.AdditionalActionContent = GetServerImageFromResponseData(response.image);
+                });
 
-                return response;
-            }
-            else
-            {
-                // success
-                Objects.Server.PostRebuild.Response response = JsonConvert.DeserializeObject<Objects.Server.PostRebuild.Response>(responseContent);
-
-                ServerActionResponse actionResponse = GetServerActionFromResponseData(response.action);
-                //actionResponse.AdditionalActionContent = GetServerImageFromResponseData(response.image);
-
-                return actionResponse;
-            }
+            return result;
         }
 
         /// <summary>
@@ -506,9 +504,8 @@ namespace lkcode.hetznercloudapi.Api
         public async Task<ServerActionResponse> Delete(string token = null)
         {
             string responseContent = await ApiCore.SendDeleteRequest(string.Format("/servers/{0}", this.Id), token: token);
-            Objects.Server.Delete.Response response = JsonConvert.DeserializeObject<Objects.Server.Delete.Response>(responseContent);
 
-            ServerActionResponse actionResponse = GetServerActionFromResponseData(response.action);
+            ServerActionResponse actionResponse = GetServerActionFromResponseDataEx<Objects.Server.Delete.Response>(responseContent);
 
             return actionResponse;
         }
@@ -573,25 +570,10 @@ namespace lkcode.hetznercloudapi.Api
             arguments.Add("ip", ip);
             
             string responseContent = await ApiCore.SendPostRequest(string.Format("/servers/{0}/actions/attach_to_network", this.Id), arguments, token: token);
-            JObject responseObject = JObject.Parse(responseContent);
-            if (responseObject["error"] != null)
-            {
-                // error
-                Objects.Server.Universal.ErrorResponse error = JsonConvert.DeserializeObject<Objects.Server.Universal.ErrorResponse>(responseContent);
-                var response = new ServerActionResponse();
-                response.Error = GetErrorFromResponseData(error);
 
-                return response;
-            }
-            else
-            {
-                // success
-                var response = JsonConvert.DeserializeObject<Objects.Server.PostAttachToNetwork.Response>(responseContent);
+            var result = GetServerActionFromResponseDataEx<Objects.Server.PostAttachToNetwork.Response>(responseContent);
 
-                var actionResponse = GetServerActionFromResponseData(response.action);
-
-                return actionResponse;
-            }
+            return result;
         }
 
 

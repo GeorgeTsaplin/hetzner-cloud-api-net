@@ -1,6 +1,6 @@
 ﻿namespace lkcode.hetznercloudapi.Objects.Server.Create
 {
-    public class Response
+    public class Response : Universal.ISuccessResponse
     {
         public Server.Universal.Server server { get; set; }
         public Server.Universal.ServerAction action { get; set; }
