@@ -342,9 +342,9 @@ namespace lkcode.hetznercloudapi.Api
         /// Starts a server by turning its power on.
         /// </summary>
         /// <returns>the serialized ServerActionResponse</returns>
-        public async Task<ServerActionResponse> PowerOn()
+        public async Task<ServerActionResponse> PowerOn(string token = null)
         {
-            string responseContent = await ApiCore.SendPostRequest(string.Format("/servers/{0}/actions/poweron", this.Id));
+            string responseContent = await ApiCore.SendPostRequest(string.Format("/servers/{0}/actions/poweron", this.Id), token: token);
             Objects.Server.PostPoweron.Response response = JsonConvert.DeserializeObject<Objects.Server.PostPoweron.Response>(responseContent);
 
             ServerActionResponse actionResponse = GetServerActionFromResponseData(response.action);
