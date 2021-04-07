@@ -33,7 +33,7 @@ namespace lkcode.hetznercloudapi.Objects.Server.PostCreateImage
         public object deprecated { get; set; }
     }
 
-    public class Response
+    public class Response : ISuccessResponse
     {
         public Image image { get; set; }
         public ServerAction action { get; set; }
